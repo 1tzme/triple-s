@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
 	"triple-s/internal/structure"
 )
 
@@ -15,16 +16,16 @@ const (
 
 func CreateBucket(dataDir, bucketName string) error {
 	bucketDir := filepath.Join(dataDir, bucketName)
-	err := os.MkdirAll(bucketDir, 0755)
+	err := os.MkdirAll(bucketDir, 0o755)
 	if err != nil {
 		return err
 	}
 
-	bucket := structure.Bucket {
-		Name: bucketName,
+	bucket := structure.Bucket{
+		Name:         bucketName,
 		CreationTime: time.Now(),
 		LastModified: time.Now(),
-		Status: "active",
+		Status:       "active",
 	}
 
 	return addBucketToCSV(dataDir, bucket)
@@ -43,7 +44,7 @@ func addBucketToCSV(dataDir string, bucket structure.Bucket) error {
 		}
 	}
 
-	file, err := os.OpenFile(csvPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(csvPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
