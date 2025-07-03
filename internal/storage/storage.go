@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/csv"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -59,10 +60,20 @@ func ListBuckets(dataDir string) ([]structure.Bucket, error) {
 			continue
 		}
 		if len(record) < 4 {
+			log.Printf("Not enough fields in line %d: expected 4, got %d", i+1, len(record))
 			continue
 		}
-		creationTime, _ := time.Parse(time.RFC3339, record[1])
-		modifiedTime, _ := time.Parse(time.RFC3339, record[2])
+
+		creationTime, err := time.Parse(time.RFC3339, record[1])
+		if err != nil {
+			log.Printf("Failed to parse CreationTime in line %d: %v", i+1, err)
+			continue
+		}
+		modifiedTime, err := time.Parse(time.RFC3339, record[2])
+		if err != nil {
+			log.Printf("Failed to parse ModifiedTime in line %d: %v", i+1, err)
+			continue
+		}
 
 		bucket := structure.Bucket{
 			Name:         record[0],
