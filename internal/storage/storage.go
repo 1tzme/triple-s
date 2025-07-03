@@ -31,6 +31,51 @@ func CreateBucket(dataDir, bucketName string) error {
 	return addBucketToCSV(dataDir, bucket)
 }
 
+func ListBuckets(dataDir string) ([]structure.Bucket, error) {
+	csvPath := filepath.Join(dataDir, bucketsCSV)
+	_, err := os.Stat(csvPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []structure.Bucket{}, nil
+		}
+		return nil, err
+	}
+
+	file, err := os.Open(csvPath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	buckets := []structure.Bucket{}
+	for i, record := range records {
+		if i == 0 && len(record) > 0 && record[0] == "Name" {
+			continue
+		}
+		if len(record) < 4 {
+			continue
+		}
+		creationTime, _ := time.Parse(time.RFC3339, record[1])
+		modifiedTime, _ := time.Parse(time.RFC3339, record[2])
+
+		bucket := structure.Bucket{
+			Name:         record[0],
+			CreationTime: creationTime,
+			LastModified: modifiedTime,
+			Status:       record[3],
+		}
+		buckets = append(buckets, bucket)
+	}
+
+	return buckets, nil
+}
+
 func addBucketToCSV(dataDir string, bucket structure.Bucket) error {
 	csvPath := filepath.Join(dataDir, bucketsCSV)
 
