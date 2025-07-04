@@ -12,7 +12,7 @@ func Router(server *s.Server) *http.ServeMux {
 	h := h.NewHandler(server)
 
 	mux.HandleFunc("PUT /{BucketName}", h.PutBucket)
-	mux.HandleFunc("GET /", h.GetBuckets)
+	mux.HandleFunc("GET /{$}", h.GetBuckets)
 	mux.HandleFunc("DELETE /{BucketName}", h.DeleteBucket)
 	mux.HandleFunc("PUT /{BucketName}/{ObjectKey}", h.PutObject)
 	mux.HandleFunc("GET /{BucketName}/{ObjectKey}", h.GetObject)
