@@ -87,6 +87,55 @@ func ListBuckets(dataDir string) ([]structure.Bucket, error) {
 	return buckets, nil
 }
 
+func DeleteBucket(dataDir string, bucketName string) error {
+	bucketDir := filepath.Join(dataDir, bucketName)
+	err := os.RemoveAll(bucketDir)
+	if err != nil {
+		return err
+	}
+
+	return removeBucketFromCSV(dataDir, bucketName)
+}
+
+func removeBucketFromCSV(dataDir, bucketName string) error {
+	csvPath := filepath.Join(dataDir, bucketsCSV)
+
+	buckets, err := ListBuckets(dataDir)
+	if err != nil {
+		return err
+	}
+
+	filteredBuckets := []structure.Bucket{}
+	for _, bucket := range buckets {
+		if bucket.Name != bucketName {
+			filteredBuckets = append(filteredBuckets, bucket)
+		}
+	}
+
+	file, err := os.Create(csvPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write([]string{"Name", "CreationTime", "LastModifiedTime", "Status"})
+
+	for _, bucket := range filteredBuckets {
+		record := []string{
+			bucket.Name,
+			bucket.CreationTime.Format(time.RFC3339),
+			bucket.LastModified.Format(time.RFC3339),
+			bucket.Status,
+		}
+		writer.Write(record)
+	}
+
+	return nil
+}
+
 func addBucketToCSV(dataDir string, bucket structure.Bucket) error {
 	csvPath := filepath.Join(dataDir, bucketsCSV)
 
