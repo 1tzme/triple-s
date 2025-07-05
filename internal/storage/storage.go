@@ -32,6 +32,21 @@ func CreateBucket(dataDir, bucketName string) error {
 	return addBucketToCSV(dataDir, bucket)
 }
 
+func BucketExists(dataDir, bucketName string) (bool, error) {
+	buckets, err := ListBuckets(dataDir)
+	if err != nil {
+		return false, err
+	}
+
+	for _, bucket := range buckets {
+		if bucket.Name == bucketName {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
 func ListBuckets(dataDir string) ([]structure.Bucket, error) {
 	csvPath := filepath.Join(dataDir, bucketsCSV)
 	_, err := os.Stat(csvPath)
