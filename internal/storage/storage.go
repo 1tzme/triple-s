@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"triple-s/internal/structure"
@@ -183,5 +184,57 @@ func addBucketToCSV(dataDir string, bucket structure.Bucket) error {
 		bucket.LastModified.Format(time.RFC3339),
 		bucket.Status,
 	}
+	return writer.Write(record)
+}
+
+func StoreObject(dataDir, bucketName, objectKey string, data []byte, object structure.Object) error {
+	objectPath := filepath.Join(dataDir, bucketName, objectKey)
+
+	err := os.MkdirAll(filepath.Dir(objectPath), 0o755)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(objectPath, data, 0o644)
+	if err != nil {
+		return err
+	}
+
+	return addObjectToCSV(dataDir, bucketName, object)
+}
+
+func addObjectToCSV(dataDir, bucketName string, object structure.Object) error {
+	csvPath := filepath.Join(dataDir, bucketName, objectsCSV)
+
+	needHeader := false
+	_, err := os.Stat(csvPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			needHeader = true
+		} else {
+			return err
+		}
+	}
+
+	file, err := os.OpenFile(csvPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	if needHeader {
+		writer.Write([]string{"ObjectKey", "Size", "ContentType", "LastModified"})
+	}
+
+	record := []string{
+		object.ObjectKey,
+		strconv.FormatInt(object.Size, 10),
+		object.ContentType,
+		object.LastModified.Format(time.RFC3339),
+	}
+
 	return writer.Write(record)
 }
