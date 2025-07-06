@@ -66,3 +66,25 @@ func (h *Handler) GetBuckets(w http.ResponseWriter, r *http.Request) {
 
 	xml.NewEncoder(w).Encode(response)
 }
+
+func (h *Handler) DeleteBucket(w http.ResponseWriter, r *http.Request) {
+	bucketName := r.PathValue("bucketName")
+
+	exists, err := storage.BucketExists(h.server.Dir, bucketName)
+	if err != nil {
+		h.sendError(w, "Internal error", "Failed to check bucket existence", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		h.sendError(w, "NoSuchBucket", "The specified bucket does not exist", http.StatusNotFound)
+		return
+	}
+
+	err = storage.DeleteBucket(h.server.Dir, bucketName)
+	if err != nil {
+		h.sendError(w, "InternalError", "Failed to delete bucket", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
