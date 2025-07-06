@@ -11,7 +11,7 @@ import (
 )
 
 func (h *Handler) PutObject(w http.ResponseWriter, r *http.Request) {
-	bucketName := r.PathValue("buckeetName")
+	bucketName := r.PathValue("bucketName")
 	objectKey := r.PathValue("objectKey")
 
 	exists, err := storage.BucketExists(h.server.Dir, bucketName)
