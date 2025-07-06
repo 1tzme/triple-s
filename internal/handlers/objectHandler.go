@@ -32,7 +32,7 @@ func (h *Handler) PutObject(w http.ResponseWriter, r *http.Request) {
 	contentLenStr := r.Header.Get("Content-Length")
 	var contentLen int64
 	if contentLenStr != "" {
-		_, err := strconv.ParseInt(contentLenStr, 10, 64)
+		contentLen, err = strconv.ParseInt(contentLenStr, 10, 64)
 		if err != nil {
 			h.sendError(w, "InvalidContentLength", "Content length is not valid", http.StatusBadRequest)
 			return
