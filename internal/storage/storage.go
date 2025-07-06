@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/csv"
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -237,4 +238,95 @@ func addObjectToCSV(dataDir, bucketName string, object structure.Object) error {
 	}
 
 	return writer.Write(record)
+}
+
+func ObjectExists(dataDir, bucketName, objectKey string) (bool, error) {
+	objectPath := filepath.Join(dataDir, bucketName, objectKey)
+	_, err := os.Stat(objectPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		} else {
+			return false, err
+		}
+	}
+	return true, err
+}
+
+func GetObject(dataDir, bucketName, objectKey string) ([]byte, error) {
+	objectPath := filepath.Join(dataDir, bucketName, objectKey)
+	return os.ReadFile(objectPath)
+}
+
+func GetObjectMetadata(dataDir, bucketName, objectKey string) (*structure.Object, error) {
+	objects, err := listObjects(dataDir, bucketName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, object := range objects {
+		if object.ObjectKey == objectKey {
+			return &object, nil
+		}
+	}
+
+	return nil, errors.New("object not found")
+}
+
+func listObjects(dataDir, bucketName string) ([]structure.Object, error) {
+	csvPath := filepath.Join(dataDir, bucketName, objectsCSV)
+
+	_, err := os.Stat(csvPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []structure.Object{}, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	file, err := os.Open(csvPath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	objects := []structure.Object{}
+	for i, record := range records {
+		if i == 0 && len(record) > 0 && record[0] == "ObjectKey" {
+			continue
+		}
+
+		if len(record) < 4 {
+			log.Printf("Not enough fields in line %d: expected 4, got %d", i+1, len(record))
+			continue
+		}
+
+		size, err := strconv.ParseInt(record[1], 10, 64)
+		if err != nil {
+			log.Printf("Failed to parse Size in line %d: %v", i+1, err)
+			continue
+		}
+		lastModified, err := time.Parse(time.RFC3339, record[3])
+		if err != nil {
+			log.Printf("Failed to parse LastModified in line %d: %v", i+1, err)
+			continue
+		}
+
+		object := structure.Object{
+			ObjectKey:    record[0],
+			Size:         size,
+			ContentType:  record[2],
+			LastModified: lastModified,
+		}
+		objects = append(objects, object)
+	}
+
+	return objects, nil
 }
