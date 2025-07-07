@@ -19,7 +19,12 @@ func main() {
 		return
 	}
 
-	err := os.MkdirAll(dir, 0o755)
+	err := v.ValidateDataDirectory(dir)
+	if err != nil {
+		log.Fatalf("Invalid data directory: %v", err)
+	}
+
+	err = os.MkdirAll(dir, 0o755)
 	if err != nil {
 		log.Fatalf("Failed to create directory %s: %v", dir, err)
 	}
