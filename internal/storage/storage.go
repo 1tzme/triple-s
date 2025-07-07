@@ -330,3 +330,51 @@ func listObjects(dataDir, bucketName string) ([]structure.Object, error) {
 
 	return objects, nil
 }
+
+func DeleteObject(dataDir, bucketName, objectKey string) error {
+	objectPath := filepath.Join(dataDir, bucketName, objectKey)
+
+	err := os.Remove(objectPath)
+	if err != nil {
+		return err
+	}
+}
+
+func removeObjectFromCSV(dataDir, bucketName, objectKey string) error {
+	csvPath := filepath.Join(dataDir, bucketName, objectKey)
+
+	objects, err := listObjects(dataDir, bucketName)
+	if err != nil {
+		return err
+	}
+
+	filteredObjects := []structure.Object{}
+	for _, object := range objects {
+		if object.ObjectKey != objectKey {
+			filteredObjects = append(filteredObjects, object)
+		}
+	}
+
+	file, err := os.Create(csvPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write([]string{"ObjectKey", "Size", "ContentType", "LastModified"})
+
+	for _, object := range filteredObjects {
+		record := []string{
+			object.ObjectKey,
+			strconv.FormatInt(object.Size, 10),
+			object.ContentType,
+			object.LastModified.Format(time.RFC3339),
+		}
+		writer.Write(record)
+	}
+
+	return nil
+}
