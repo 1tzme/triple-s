@@ -51,16 +51,12 @@ func BucketExists(dataDir, bucketName string) (bool, error) {
 
 func ListBuckets(dataDir string) ([]structure.Bucket, error) {
 	csvPath := filepath.Join(dataDir, bucketsCSV)
-	_, err := os.Stat(csvPath)
+
+	file, err := os.Open(csvPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []structure.Bucket{}, nil
 		}
-		return nil, err
-	}
-
-	file, err := os.Open(csvPath)
-	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
