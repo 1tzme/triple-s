@@ -72,7 +72,7 @@ func (h *Handler) DeleteBucket(w http.ResponseWriter, r *http.Request) {
 
 	exists, err := storage.BucketExists(h.server.Dir, bucketName)
 	if err != nil {
-		h.sendError(w, "Internal error", "Failed to check bucket existence", http.StatusInternalServerError)
+		h.sendError(w, "InternalError", "Failed to check bucket existence", http.StatusInternalServerError)
 		return
 	}
 	if !exists {
@@ -82,7 +82,7 @@ func (h *Handler) DeleteBucket(w http.ResponseWriter, r *http.Request) {
 
 	isEmpty, err := storage.IsBucketEmpty(h.server.Dir, bucketName)
 	if err != nil {
-		h.sendError(w, "InternalError", "Failed to check bucke emptiness", http.StatusInternalServerError)
+		h.sendError(w, "InternalError", "Failed to check bucket emptiness", http.StatusInternalServerError)
 		return
 	}
 	if !isEmpty {
