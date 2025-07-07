@@ -108,3 +108,36 @@ func (h *Handler) GetObject(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
 }
+
+func (h *Handler) DeleteObject(w http.ResponseWriter, r *http.Request) {
+	bucketName := r.PathValue("bucketName")
+	objectKey := r.PathValue("objectKey")
+
+	exists, err := storage.BucketExists(h.server.Dir, bucketName)
+	if err != nil {
+		h.sendError(w, "InternalError", "Failed to check bucket existence", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		h.sendError(w, "NoSuchBucket", "The specified bucket does not exist", http.StatusNotFound)
+		return
+	}
+
+	objectExists, err := storage.ObjectExists(h.server.Dir, bucketName, objectKey)
+	if err != nil {
+		h.sendError(w, "InternalError", "Failed to check object existence", http.StatusInternalServerError)
+		return
+	}
+	if !objectExists {
+		h.sendError(w, "NoSuchKey", "The specified object does not exist", http.StatusNotFound)
+		return
+	}
+
+	err = storage.DeleteObject(h.server.Dir, bucketName, objectKey)
+	if err != nil {
+		h.sendError(w, "InternalError", "Failed to delete object", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
