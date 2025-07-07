@@ -188,6 +188,18 @@ func addBucketToCSV(dataDir string, bucket structure.Bucket) error {
 	return writer.Write(record)
 }
 
+func IsBucketEmpty(dataDir, bucketName string) (bool, error) {
+	objects, err := listObjects(dataDir, bucketName)
+	if err != nil {
+		return false, err
+	}
+
+	if len(objects) == 0 {
+		return true, err
+	}
+	return false, err
+}
+
 func StoreObject(dataDir, bucketName, objectKey string, data []byte, object structure.Object) error {
 	objectPath := filepath.Join(dataDir, bucketName, objectKey)
 
