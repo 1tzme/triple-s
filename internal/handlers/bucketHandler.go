@@ -50,15 +50,15 @@ func (h *Handler) GetBuckets(w http.ResponseWriter, r *http.Request) {
 			DisplayName: "",
 		},
 		Buckets: structure.Buckets{
-			Bucket: make([]structure.Bucket, 0),
+			Bucket: make([]structure.Bucket, len(buckets)),
 		},
 	}
 
-	for i, bucket := range buckets {
-		response.Buckets.Bucket[i] = structure.Bucket{
+	for _, bucket := range buckets {
+		response.Buckets.Bucket = append(response.Buckets.Bucket, structure.Bucket{
 			Name:         bucket.Name,
 			CreationTime: bucket.CreationTime,
-		}
+		})
 	}
 
 	w.Header().Set("Content Type", "application/xml")
