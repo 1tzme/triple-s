@@ -338,6 +338,8 @@ func DeleteObject(dataDir, bucketName, objectKey string) error {
 	if err != nil {
 		return err
 	}
+
+	return removeObjectFromCSV(dataDir, bucketName, objectKey)
 }
 
 func removeObjectFromCSV(dataDir, bucketName, objectKey string) error {
