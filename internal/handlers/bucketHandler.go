@@ -50,7 +50,7 @@ func (h *Handler) GetBuckets(w http.ResponseWriter, r *http.Request) {
 			DisplayName: "",
 		},
 		Buckets: structure.Buckets{
-			Bucket: make([]structure.Bucket, len(buckets)),
+			Bucket: make([]structure.Bucket, 0, len(buckets)),
 		},
 	}
 
@@ -61,7 +61,7 @@ func (h *Handler) GetBuckets(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	w.Header().Set("Content Type", "application/xml")
+	w.Header().Set("Content-Type", "application/xml")
 	w.WriteHeader(http.StatusOK)
 
 	xml.NewEncoder(w).Encode(response)
