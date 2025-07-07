@@ -343,7 +343,7 @@ func DeleteObject(dataDir, bucketName, objectKey string) error {
 }
 
 func removeObjectFromCSV(dataDir, bucketName, objectKey string) error {
-	csvPath := filepath.Join(dataDir, bucketName, objectKey)
+	csvPath := filepath.Join(dataDir, bucketName, objectsCSV)
 
 	objects, err := listObjects(dataDir, bucketName)
 	if err != nil {
