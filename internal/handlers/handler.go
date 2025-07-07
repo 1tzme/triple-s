@@ -12,7 +12,9 @@ type Handler struct {
 }
 
 func NewHandler(server *structure.Server) *Handler {
-	return &Handler{}
+	return &Handler{
+		server: server,
+	}
 }
 
 func (h *Handler) sendError(w http.ResponseWriter, code, message string, status int) {
