@@ -100,7 +100,7 @@ func ListBuckets(dataDir string) ([]structure.Bucket, error) {
 	return buckets, nil
 }
 
-func DeleteBucket(dataDir string, bucketName string) error {
+func DeleteBucket(dataDir, bucketName string) error {
 	bucketDir := filepath.Join(dataDir, bucketName)
 	err := os.RemoveAll(bucketDir)
 	if err != nil {
@@ -155,11 +155,10 @@ func addBucketToCSV(dataDir string, bucket structure.Bucket) error {
 	needHeader := false
 	_, err := os.Stat(csvPath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			needHeader = true
-		} else {
+		if !os.IsNotExist(err) {
 			return err
 		}
+		needHeader = true
 	}
 
 	file, err := os.OpenFile(csvPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
