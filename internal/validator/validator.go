@@ -7,22 +7,16 @@ import (
 )
 
 func ValidateBucketName(name string) error {
-	bucketNameRegex := regexp.MustCompile(`^[a-z0-9.-]+$`)
-
 	if len(name) < 3 || len(name) > 63 {
 		return errors.New("bucket name must be between 3 and 63 characters long")
 	}
+
+	bucketNameRegex := regexp.MustCompile(`^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$`)
 	if !bucketNameRegex.MatchString(name) {
-		return errors.New("bucket name can only contain lowercase letters, numbers, hyphens, periods")
+		return errors.New("bucket name can only contain lowercase letters, numbers, hyphens, periods and must start and end with alphanumeric char")
 	}
-	if strings.HasPrefix(name, "-") || strings.HasSuffix(name, "-") {
-		return errors.New("bucket name can not begin or end with hyphen")
-	}
-	if strings.HasPrefix(name, ".") || strings.HasSuffix(name, ".") {
-		return errors.New("bucket name can not begin or end with period")
-	}
-	if strings.Contains(name, "..") || strings.Contains(name, "--") {
-		return errors.New("bucket name can not contain double periods or hyphens")
+	if strings.Contains(name, "..") || strings.Contains(name, "--") || strings.Contains(name, "-.") || strings.Contains(name, "-.") {
+		return errors.New("bucket name cannot contain consecutive special characters")
 	}
 
 	return nil
