@@ -201,7 +201,69 @@ func StoreObject(dataDir, bucketName, objectKey string, data []byte, object stru
 		return err
 	}
 
+	exists, err := objectExistsInCSV(dataDir, bucketName, objectKey)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return updateObjectInCSV(dataDir, bucketName, object)
+	}
+
 	return addObjectToCSV(dataDir, bucketName, object)
+}
+
+func objectExistsInCSV(dataDir, bucketName, objectKey string) (bool, error) {
+	objects, err := listObjects(dataDir, bucketName)
+	if err != nil {
+		return false, err
+	}
+
+	for _, object := range objects {
+		if object.ObjectKey == objectKey {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func updateObjectInCSV(dataDir, bucketName string, updatedObject structure.Object) error {
+	objects, err := listObjects(dataDir, bucketName)
+	if err != nil {
+		return err
+	}
+
+	for i, object := range objects {
+		if object.ObjectKey == updatedObject.ObjectKey {
+			objects[i] = updatedObject
+			break
+		}
+	}
+
+	csvPath := filepath.Join(dataDir, bucketName, objectsCSV)
+	file, err := os.Create(csvPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write([]string{"ObjectKey", "Size", "ContentType", "LastModified"})
+
+	for _, object := range objects {
+		record := []string{
+			object.ObjectKey,
+			strconv.FormatInt(object.Size, 10),
+			object.ContentType,
+			object.LastModified.Format(time.RFC3339),
+		}
+		writer.Write(record)
+	}
+
+	return nil
 }
 
 func addObjectToCSV(dataDir, bucketName string, object structure.Object) error {
@@ -250,7 +312,7 @@ func ObjectExists(dataDir, bucketName, objectKey string) (bool, error) {
 			return false, err
 		}
 	}
-	return true, err
+	return true, nil
 }
 
 func GetObject(dataDir, bucketName, objectKey string) ([]byte, error) {
