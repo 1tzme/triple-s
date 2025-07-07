@@ -9,14 +9,14 @@ import (
 
 func Router(server *s.Server) *http.ServeMux {
 	mux := http.NewServeMux()
-	h := h.NewHandler(server)
+	handler := h.NewHandler(server)
 
-	mux.HandleFunc("PUT /{bucketName}", h.PutBucket)
-	mux.HandleFunc("GET /{$}", h.GetBuckets)
-	mux.HandleFunc("DELETE /{bucketName}", h.DeleteBucket)
-	mux.HandleFunc("PUT /{bucketName}/{objectKey}", h.PutObject)
-	mux.HandleFunc("GET /{bucketName}/{objectKey}", h.GetObject)
-	mux.HandleFunc("DELETE /{bucketName}/{objectKey}", h.DeleteObject)
+	mux.HandleFunc("PUT /{bucketName}", handler.PutBucket)
+	mux.HandleFunc("GET /{$}", handler.GetBuckets)
+	mux.HandleFunc("DELETE /{bucketName}", handler.DeleteBucket)
+	mux.HandleFunc("PUT /{bucketName}/{objectKey}", handler.PutObject)
+	mux.HandleFunc("GET /{bucketName}/{objectKey}", handler.GetObject)
+	mux.HandleFunc("DELETE /{bucketName}/{objectKey}", handler.DeleteObject)
 
 	return mux
 }
