@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/xml"
 	"net/http"
+
 	"triple-s/internal/structure"
 )
 
@@ -11,7 +12,9 @@ type Handler struct {
 }
 
 func NewHandler(server *structure.Server) *Handler {
-	return &Handler{}
+	return &Handler{
+		server: server,
+	}
 }
 
 func (h *Handler) sendError(w http.ResponseWriter, code, message string, status int) {
@@ -19,7 +22,7 @@ func (h *Handler) sendError(w http.ResponseWriter, code, message string, status 
 	w.WriteHeader(status)
 
 	errorResp := structure.Error{
-		Code: code,
+		Code:    code,
 		Message: message,
 	}
 
